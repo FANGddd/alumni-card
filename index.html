@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#214785" />
+    <meta name="color-scheme" content="light" />
+    <meta name="description" content="根据参考图片制作的电子校友卡静态展示页面，显示实时北京时间。" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <title>电子校友卡 · 静态展示</title>
+    <style>
+      :root {
+        font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+        color: #fff;
+        background: #f2f4f7;
+        font-synthesis: none;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      * { box-sizing: border-box; }
+
+      body { margin: 0; }
+
+      button { font: inherit; }
+
+      .page {
+        position: relative;
+        isolation: isolate;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 520px;
+        min-height: 100vh;
+        min-height: 100svh;
+        margin: 0 auto;
+        overflow: hidden;
+        background: #fff;
+        container-type: inline-size;
+      }
+
+      .blue-background {
+        position: absolute;
+        z-index: -1;
+        inset: 0 0 auto;
+        width: 100%;
+        height: 61.2cqw;
+        color: #214785;
+      }
+
+      .watermark {
+        position: absolute;
+        z-index: -1;
+        top: 5.4cqw;
+        right: -6.3cqw;
+        width: 27cqw;
+        height: 27cqw;
+        overflow: hidden;
+        border-radius: 50%;
+        opacity: .14;
+        filter: grayscale(1) invert(1);
+        mix-blend-mode: screen;
+        pointer-events: none;
+      }
+
+      .watermark img {
+        position: absolute;
+        width: 281.5cqw;
+        max-width: none;
+        left: -49.4cqw;
+        top: -107.5cqw;
+      }
+
+      .topbar {
+        position: absolute;
+        inset: 0 0 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: max(44px, 9.2cqw);
+        padding-top: env(safe-area-inset-top, 0px);
+      }
+
+      .topbar h1 {
+        margin: 0;
+        font-size: clamp(16px, 4.1cqw, 24px);
+        font-weight: 400;
+        letter-spacing: .12em;
+        line-height: 1.4;
+      }
+
+      .back-button {
+        position: absolute;
+        top: 0;
+        left: 2.9cqw;
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        color: #fff;
+        background: transparent;
+        border: 0;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      .back-button svg {
+        width: 15px;
+        height: 22px;
+      }
+
+      .clock {
+        position: absolute;
+        top: 17.5cqw;
+        left: 0;
+        width: 100%;
+        margin: 0;
+        text-align: center;
+        white-space: nowrap;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 7.65cqw;
+        font-weight: 300;
+        line-height: 1.18;
+        letter-spacing: -.035em;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .alumni-card {
+        position: relative;
+        flex: 0 0 auto;
+        width: 74.75%;
+        aspect-ratio: 952 / 1465;
+        margin: 31.51cqw auto 0;
+        overflow: hidden;
+        border-radius: 4.9cqw;
+        background: #faf9f5;
+      }
+
+      /* Clip the supplied screenshot to its card, preserving the original artwork. */
+      .card-image {
+        position: absolute;
+        left: -17.12185%;
+        top: -27.44027%;
+        width: 133.82353%;
+        height: auto;
+        max-width: none;
+        display: block;
+      }
+
+      .footer {
+        margin-top: auto;
+        padding: 14cqw 4.35cqw max(10.25cqw, env(safe-area-inset-bottom, 0px));
+      }
+
+      .refresh-button {
+        display: block;
+        width: 100%;
+        min-height: 44px;
+        height: 10cqw;
+        padding: 0 16px;
+        color: #fff;
+        background: #607c92;
+        border: 0;
+        border-radius: 3px;
+        font-size: clamp(15px, 3.75cqw, 22px);
+        font-weight: 400;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: background-color 150ms ease, transform 150ms ease;
+      }
+
+      .refresh-button:hover { background: #547086; }
+      .refresh-button:active { transform: translateY(1px); }
+      .refresh-button:disabled { cursor: progress; }
+
+      button:focus-visible {
+        outline: 3px solid #b9d4ff;
+        outline-offset: 3px;
+      }
+
+      .toast {
+        position: fixed;
+        z-index: 5;
+        bottom: max(110px, calc(env(safe-area-inset-bottom, 0px) + 110px));
+        left: 50%;
+        width: max-content;
+        max-width: calc(100vw - 32px);
+        padding: 10px 16px;
+        border-radius: 8px;
+        color: #fff;
+        background: rgba(20, 32, 48, .88);
+        font-size: 14px;
+        line-height: 1.5;
+        text-align: center;
+        transform: translateX(-50%);
+      }
+
+      .toast[hidden] { display: none; }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      noscript {
+        display: block;
+        padding: 12px 20px;
+        color: #70451f;
+        background: #fff3de;
+        font-size: 14px;
+      }
+
+      @media (min-width: 600px) {
+        .page { box-shadow: 0 0 35px rgba(26, 47, 76, .08); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .refresh-button { transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <svg class="blue-background" viewBox="0 0 768 470" preserveAspectRatio="none" aria-hidden="true">
+        <path fill="currentColor" d="M0 0H768V380Q384 510 0 380Z" />
+      </svg>
+      <div class="watermark" aria-hidden="true">
+        <img src="assets/reference.jpg" alt="" />
+      </div>
+
+      <header class="topbar">
+        <button class="back-button" id="back-button" type="button" aria-label="返回上一页">
+          <svg viewBox="0 0 15 22" fill="none" aria-hidden="true">
+            <path d="M12.5 2L3 11L12.5 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <h1>电子校友卡</h1>
+      </header>
+
+      <time class="clock" id="clock" aria-label="当前北京时间">---- -- -- --:--:--</time>
+
+      <main class="alumni-card" aria-label="校友卡展示">
+        <img
+          class="card-image"
+          src="assets/reference.jpg"
+          alt="参考图片中的南京审计大学校友卡：吴桐，2019年级，2019级贸易经济班。"
+          draggable="false"
+          fetchpriority="high"
+        />
+      </main>
+
+      <footer class="footer">
+        <button class="refresh-button" id="refresh-button" type="button">刷新</button>
+        <span class="sr-only">此页面为静态展示，并非学校官方认证页面。</span>
+      </footer>
+
+      <noscript>请启用浏览器 JavaScript，以显示每秒更新的当前时间。</noscript>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script>
+      (() => {
+        "use strict";
+
+        const clock = document.getElementById("clock");
+        const refreshButton = document.getElementById("refresh-button");
+        const backButton = document.getElementById("back-button");
+        const toast = document.getElementById("toast");
+        const formatter = new Intl.DateTimeFormat("en-GB", {
+          timeZone: "Asia/Shanghai",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hourCycle: "h23"
+        });
+
+        let clockTimer;
+        let toastTimer;
+        let refreshTimer;
+
+        function updateClock() {
+          const now = new Date();
+          const parts = Object.fromEntries(
+            formatter.formatToParts(now).map(({ type, value }) => [type, value])
+          );
+          const text = `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
+          if (clock.textContent !== text) {
+            clock.textContent = text;
+            clock.dateTime = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}+08:00`;
+          }
+        }
+
+        function tick() {
+          clearTimeout(clockTimer);
+          updateClock();
+          // Always read the device clock; align to whole seconds without accumulating drift.
+          clockTimer = setTimeout(tick, 1000 - (Date.now() % 1000) + 5);
+        }
+
+        function showToast(message) {
+          clearTimeout(toastTimer);
+          toast.textContent = message;
+          toast.hidden = false;
+          toastTimer = setTimeout(() => { toast.hidden = true; }, 1800);
+        }
+
+        refreshButton.addEventListener("click", () => {
+          clearTimeout(refreshTimer);
+          tick();
+          refreshButton.disabled = true;
+          refreshButton.textContent = "已刷新";
+          refreshTimer = setTimeout(() => {
+            refreshButton.disabled = false;
+            refreshButton.textContent = "刷新";
+          }, 600);
+        });
+
+        backButton.addEventListener("click", () => {
+          // Only navigate back when there is a known previous page on this site.
+          let sameOriginReferrer = false;
+          try {
+            sameOriginReferrer = Boolean(document.referrer) &&
+              new URL(document.referrer).origin === location.origin;
+          } catch (_) { /* Opening a local HTML file may not have a usable referrer. */ }
+          if (sameOriginReferrer && history.length > 1) {
+            history.back();
+          } else {
+            showToast("当前已是首页");
+          }
+        });
+
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) {
+            clearTimeout(clockTimer);
+          } else {
+            tick();
+          }
+        });
+        window.addEventListener("pageshow", tick);
+        tick();
+      })();
+    </script>
+  </body>
+</html>

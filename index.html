@@ -147,6 +147,17 @@
         display: block;
       }
 
+      .card-portrait {
+        position: absolute;
+        left: 27.2%;
+        top: 20.24%;
+        width: 45.7%;
+        height: 38.1%;
+        display: block;
+        object-fit: cover;
+        object-position: center;
+      }
+
       .footer {
         margin-top: auto;
         padding: 14cqw 4.35cqw max(10.25cqw, env(safe-area-inset-bottom, 0px));
@@ -250,6 +261,15 @@
           class="card-image"
           src="assets/reference.jpg"
           alt="参考图片中的南京审计大学校友卡：吴桐，2019年级，2019级贸易经济班。"
+          draggable="false"
+          fetchpriority="high"
+        />
+        <img
+          class="card-portrait"
+          src="assets/portrait.jpg"
+          alt="用户提供的新照片"
+          width="666"
+          height="888"
           draggable="false"
           fetchpriority="high"
         />
